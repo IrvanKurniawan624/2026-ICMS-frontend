@@ -283,7 +283,7 @@ export default function RoomBookingList() {
 
             <input
               type="text"
-              placeholder="Search Barang"
+              placeholder="Search Booking"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-12 pr-4 py-2 rounded-lg bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -361,7 +361,15 @@ export default function RoomBookingList() {
       <BookingHistoryModal
         isOpen={historyOpen}
         onClose={() => setHistoryOpen(false)}
+        onEdit={(row) => {
+          setSelected(row)
+          setModalOpen(true)
+          setHistoryOpen(false)
+        }}
+        onDelete={handleDelete}
       />
+
+
 
 
     </div>

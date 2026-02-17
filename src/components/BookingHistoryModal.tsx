@@ -4,13 +4,22 @@ import type { RoomBooking } from "../types/roombooking"
 import { getAllBookings } from "../api/roombooking.api"
 import { formatDateTimeID } from "../utils/dateFormatter"
 import StatusBadge from "./StatusBadge"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faPenToSquare, faTrash } from "@fortawesome/free-solid-svg-icons"
 
 interface Props {
   isOpen: boolean
   onClose: () => void
+  onEdit: (row: RoomBooking) => void
+  onDelete: (id: string) => Promise<void>
 }
 
-export default function BookingHistoryModal({ isOpen, onClose }: Props) {
+export default function BookingHistoryModal({
+  isOpen,
+  onClose,
+  onEdit,
+  onDelete
+}: Props) {
   const [data, setData] = useState<RoomBooking[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -23,6 +32,11 @@ export default function BookingHistoryModal({ isOpen, onClose }: Props) {
     const result = await getAllBookings()
     setData(result)
     setLoading(false)
+  }
+
+  const handleDeleteInternal = async (id: string) => {
+    await onDelete(id)
+    await fetchHistory()
   }
 
   const columns: TableColumn<RoomBooking>[] = [
@@ -65,6 +79,28 @@ export default function BookingHistoryModal({ isOpen, onClose }: Props) {
     {
       name: "Status",
       cell: row => <StatusBadge status={row.status} />
+    },
+    {
+      name: "Actions",
+      cell: row => (
+        <div className="flex gap-3 items-center">
+          <button
+            onClick={() => onEdit(row)}
+            className="text-brand hover:text-brand-dark transition cursor-pointer"
+            title="Edit"
+          >
+            <FontAwesomeIcon icon={faPenToSquare} size="lg" />
+          </button>
+
+          <button
+            onClick={() => handleDeleteInternal(row.id)}
+            className="text-red-600 hover:text-red-800 transition cursor-pointer"
+            title="Delete"
+          >
+            <FontAwesomeIcon icon={faTrash} size="lg" />
+          </button>
+        </div>
+      )
     }
   ]
 
