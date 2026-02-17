@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import type { RoomBooking } from "../types/roombooking";
+import { useEffect, useState } from "react"
+import type { RoomBooking } from "../types/roombooking"
 
 interface Props {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: Partial<RoomBooking>) => void;
-  initialData?: RoomBooking | null;
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: Partial<RoomBooking>) => void
+  initialData?: RoomBooking | null
 }
 
 export default function BookingModal({
@@ -14,74 +14,81 @@ export default function BookingModal({
   onSubmit,
   initialData,
 }: Props) {
-  const now = new Date();
-
-  const formatDate = (d: Date) =>
-    d.toISOString().split("T")[0];
-
-  const formatTime = (d: Date) =>
-    d.toTimeString().slice(0, 5);
-
-  const emptyForm = {
-    bookerName: "",
-    roomName: "",
-    startDate: formatDate(now),
-    startTime: formatTime(now),
-    endDate: formatDate(now),
-    endTime: formatTime(new Date(now.getTime() + 60 * 60 * 1000)),
-    status: 0,
-  };
-
-  const [form, setForm] = useState<any>(emptyForm);
-  const [show, setShow] = useState(false);
+  const [form, setForm] = useState<any>(null)
+  const [show, setShow] = useState(false)
 
   useEffect(() => {
-    if (isOpen) {
-      if (initialData) {
-        const start = new Date(initialData.startTime);
-        const end = new Date(initialData.endTime);
-
-        setForm({
-          bookerName: initialData.bookerName,
-          roomName: initialData.roomName,
-          startDate: formatDate(start),
-          startTime: formatTime(start),
-          endDate: formatDate(end),
-          endTime: formatTime(end),
-          status: initialData.status,
-        });
-      } else {
-        setForm(emptyForm);
-      }
-
-      setTimeout(() => setShow(true), 10);
-    } else {
-      setShow(false);
+    if (!isOpen) {
+      setShow(false)
+      return
     }
-  }, [isOpen, initialData]);
 
-  if (!isOpen) return null;
+    const now = new Date()
 
-  const combineDateTime = (date: string, time: string) =>
-    new Date(`${date}T${time}`).toISOString();
+    const formatDate = (d: Date) =>
+    new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+      .toISOString()
+      .split("T")[0]
 
-  const startISO = combineDateTime(form.startDate, form.startTime);
-  const endISO = combineDateTime(form.endDate, form.endTime);
+    const formatTime = (d: Date) =>
+      new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+        .toISOString()
+        .substring(11, 16)
 
-  const isInvalid = new Date(endISO) <= new Date(startISO);
+
+    if (initialData) {
+      const start = new Date(initialData.startTime)
+      const end = new Date(initialData.endTime)
+
+      setForm({
+        bookerName: initialData.bookerName,
+        roomName: initialData.roomName,
+        startDate: formatDate(start),
+        startTime: formatTime(start),
+        endDate: formatDate(end),
+        endTime: formatTime(end),
+        status: initialData.status,
+      })
+    } else {
+      setForm({
+        bookerName: "",
+        roomName: "",
+        startDate: formatDate(now),
+        startTime: formatTime(now),
+        endDate: formatDate(now),
+        endTime: formatTime(new Date(now.getTime() + 60 * 60 * 1000)),
+        status: 1,
+      })
+    }
+
+    setTimeout(() => setShow(true), 10)
+  }, [isOpen, initialData])
+
+  if (!isOpen || !form) return null
+
+  const combineDateTime = (date: string, time: string) => {
+    const local = new Date(`${date}T${time}`)
+    const utc = new Date(local.getTime() - local.getTimezoneOffset() * 60000)
+    return utc.toISOString()
+  }
+
+
+  const startISO = combineDateTime(form.startDate, form.startTime)
+  const endISO = combineDateTime(form.endDate, form.endTime)
+
+  const isInvalid = new Date(endISO) <= new Date(startISO)
 
   const handleSubmit = () => {
-    if (isInvalid) return;
+    if (isInvalid) return
 
     onSubmit({
-        bookerName: form.bookerName,
-        roomName: form.roomName,
-        startTime: startISO,
-        endTime: endISO,
-        status: form.status,
-    });
-
-  };
+      bookerName: form.bookerName,
+      roomName: form.roomName,
+      startTime: startISO,
+      endTime: endISO,
+      status: form.status,
+    })
+  }
 
   return (
     <div
@@ -99,7 +106,6 @@ export default function BookingModal({
         </h2>
 
         <div className="space-y-3">
-
           <input
             type="text"
             placeholder="Booker Name"
@@ -120,24 +126,22 @@ export default function BookingModal({
             }
           />
 
-        {initialData && (
+          {initialData && (
             <div>
-                <label className="text-sm font-semibold">Status</label>
-                <select
+              <label className="text-sm font-semibold">Status</label>
+              <select
                 value={form.status}
                 onChange={(e) =>
-                    setForm({ ...form, status: Number(e.target.value) })
+                  setForm({ ...form, status: Number(e.target.value) })
                 }
                 className="w-full border p-2 rounded-lg mt-1 focus:ring-2 focus:ring-purple-500"
-                >
-                <option value={0}>Pending</option>
-                <option value={1}>Approved</option>
-                <option value={2}>Rejected</option>
-                </select>
+              >
+                <option value={1}>Pending</option>
+                <option value={2}>Approved</option>
+                <option value={3}>Rejected</option>
+              </select>
             </div>
-        )}
-
-
+          )}
 
           <div>
             <label className="text-sm font-semibold">Start</label>
@@ -209,5 +213,5 @@ export default function BookingModal({
         </div>
       </div>
     </div>
-  );
+  )
 }
