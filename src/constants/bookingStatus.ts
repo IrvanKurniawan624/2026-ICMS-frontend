@@ -1,10 +1,10 @@
 export const bookingStatusLabel = (status: number): string => {
   switch (status) {
-    case 0:
-      return "Pending";
     case 1:
-      return "Approved";
+      return "Pending";
     case 2:
+      return "Approved";
+    case 3:
       return "Rejected";
     default:
       return "Unknown";

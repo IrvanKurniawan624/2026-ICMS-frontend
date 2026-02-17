@@ -1,12 +1,7 @@
-import { useEffect } from "react";
-import { getAllBookings } from "./api/roombooking.api";
+import RoomBookingList from "./pages/RoomBookingList";
 
 function App() {
-  useEffect(() => {
-    getAllBookings().then(console.log).catch(console.error);
-  }, []);
-
-  return <h1 className="text-2xl font-bold">ICMS Frontend</h1>;
+  return <RoomBookingList />;
 }
 
 export default App;
